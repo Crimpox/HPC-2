@@ -141,6 +141,7 @@ void write_to_file(char filename[]){
 
 /******************************************************************************************/
 
+
 int main(int argc, char *argv[]){
 
   /* MPI related variables */
@@ -148,6 +149,8 @@ int main(int argc, char *argv[]){
   int nProcs;        /* Total number of MPI processes*/
   int nextProc;      /* Next process to send work to */
   MPI_Status status; /* Status from MPI calls */
+  
+  int startFlag = -1111; /* Flag to indicate initial request*/
   int endFlag=-9999; /* Flag to indicate completion*/
 
   /* Timing variables */
@@ -156,6 +159,10 @@ int main(int argc, char *argv[]){
   /* Loop indices */
   int i,j;
   
+  int n_results = n_IM + 3;
+  int resultsBuffer[n_results]; 
+  
+
   MPI_Init(&argc, &argv);
 
   /* Record start time */
@@ -192,14 +199,36 @@ int main(int argc, char *argv[]){
     // Hand out work to worker processes
     for (i=0; i<N_RE+1; i++){
       // Receive request for work
-      MPI_Recv(&nextProc, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      
+      nextProc = results[0];
+
+      // If the request for work contains results then add them to the managers results
+      if (results[1] != startFlag){
+        int rj;
+        for (rj = 0; rj < n_IM+1; rj++){
+          nIter[results[1]][rj] = results[rj+2];
+        }
+      }
+      
       // Send i value to requesting process
       MPI_Send(&i,        1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
     }
     // Tell all the worker processes to finish (once for each worker process = nProcs-1)
     for (i=0; i<nProcs-1; i++){
       // Receive request for work
-      MPI_Recv(&nextProc, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+      nextProc = results[0];
+
+      // If the request for work contains results then add them to the managers results
+      if (results[1] != startFlag){
+        int rj;
+        for (rj = 0; rj < n_IM+1; rj++){
+          nIter[results[1]][rj] = results[rj+2];
+        }
+      }
+
       // Send endFlag to finish
       MPI_Send(&endFlag,     1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
     }
@@ -208,27 +237,36 @@ int main(int argc, char *argv[]){
   // Worker Processes
   else {
 
+    results[0] = rank;
+    results[1] = startFlag;
     while(true){
-
+      
       // Send request for work
-      MPI_Send(&myRank, 1, MPI_INT, 0, 100+myRank, MPI_COMM_WORLD);
+      MPI_Send(&results, 1, MPI_INT, 0, 100+myRank, MPI_COMM_WORLD);
       // Receive i value to work on
       MPI_Recv(&i,      1, MPI_INT, 0, 100       , MPI_COMM_WORLD, &status); 
 
       if (i==endFlag){
-	break;
+	      break;
       } else {
-	calc_vals(i);
+	      calc_vals(i);
+        results[1] = i;
+        
+        int ri;
+        for (ri=2; ri < n_results; ri++){
+            results[ri] = nIter[i][ri-2];
+        }
+
       }
       
     } // while(true)
   } // else worker process
 
   /* Communicate results so rank 1 has all the values */
-  do_communication(myRank);
+  //do_communication(myRank);
 
   /* Write out results */
-  if (doIO && myRank==1 ){
+  if (doIO && myRank==0 ){
     if (verbose) {printf("Writing out results from process %d \n", myRank);}
     write_to_file("mandelbrot.dat");
   }
