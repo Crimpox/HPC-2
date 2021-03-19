@@ -212,7 +212,7 @@ int main(int argc, char *argv[]){
 
       // If the request for work contains results then add them to the managers results
       if (results[1] != startFlag){
-        printf("Received column %d from process %d", results[1], results[0]);
+        printf("Received column %d from process %d\n", results[1], results[0]);
 
         int rj;
         for (rj = 0; rj < N_IM+1; rj++){
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]){
 
       // If the request for work contains results then add them to the managers results
       if (results[1] != startFlag){
-        printf("Received final column %d from process %d", results[1], results[0]);
+        printf("Received final column %d from process %d\n", results[1], results[0]);
 
         int rj;
         for (rj = 0; rj < N_IM+1; rj++){
