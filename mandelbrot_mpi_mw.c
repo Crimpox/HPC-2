@@ -253,7 +253,7 @@ int main(int argc, char *argv[]){
     while(true){
       
       // Send request for work
-      MPI_Send(&results, 1, MPI_INT, 0, 100+myRank, MPI_COMM_WORLD);
+      MPI_Send(&results, n_results, MPI_INT, 0, 100+myRank, MPI_COMM_WORLD);
       // Receive i value to work on
       MPI_Recv(&i,      1, MPI_INT, 0, 100       , MPI_COMM_WORLD, &status); 
 
