@@ -272,7 +272,16 @@ int main(int argc, char *argv[]){
   /* Communicate results so rank 1 has all the values */
   //do_communication(myRank);
 
-  
+  /* Verify results*/
+  if (myRank==0){
+    for (i=0; i<N_RE+1; i++){
+      for (j=0; j<N_IM+1; j++){
+        if (nIter[i][j] == -1){
+          printf("Column %d failed\n", i);
+        }
+      }
+    }
+  }
 
   /* Write out results */
   if (doIO && myRank==0 ){
