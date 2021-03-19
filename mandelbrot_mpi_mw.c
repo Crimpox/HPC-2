@@ -159,8 +159,8 @@ int main(int argc, char *argv[]){
   /* Loop indices */
   int i,j;
   
-  int n_results = n_IM + 3;
-  int resultsBuffer[n_results]; 
+  int n_results = N_IM + 3;
+  int results[n_results]; 
   
 
   MPI_Init(&argc, &argv);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]){
   // Worker Processes
   else {
 
-    results[0] = rank;
+    results[0] = myRank;
     results[1] = startFlag;
     while(true){
       
