@@ -212,6 +212,8 @@ int main(int argc, char *argv[]){
 
       // If the request for work contains results then add them to the managers results
       if (results[1] != startFlag){
+        printf("Received column %d from process %d", results[1], results[0]);
+
         int rj;
         for (rj = 0; rj < N_IM+1; rj++){
           nIter[results[1]][rj] = results[rj+2];
@@ -230,6 +232,8 @@ int main(int argc, char *argv[]){
 
       // If the request for work contains results then add them to the managers results
       if (results[1] != startFlag){
+        printf("Received final column %d from process %d", results[1], results[0]);
+
         int rj;
         for (rj = 0; rj < N_IM+1; rj++){
           nIter[results[1]][rj] = results[rj+2];
@@ -273,7 +277,7 @@ int main(int argc, char *argv[]){
   //do_communication(myRank);
 
   /* Verify results*/
-  if (myRank==0){
+  if (myRank==0 && false){
     for (i=0; i<N_RE+1; i++){
       for (j=0; j<N_IM+1; j++){
         if (nIter[i][j] == -1){
