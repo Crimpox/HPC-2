@@ -131,7 +131,7 @@ void write_to_file(char filename[]){
   
   outfile=fopen(filename,"w");
   for (i=0; i<N_RE+1; i++){
-    if (nIter[i][j] == 0){
+    if (nIter[i][j] == -1){
       printf("%d failed\n", i);
     }
     for (j=0; j<N_IM+1; j++){
@@ -165,6 +165,13 @@ int main(int argc, char *argv[]){
   int n_results = N_IM + 3;
   int results[n_results]; 
   
+  //initialise nIter
+  for (i=0; i<N_RE+1; i++){
+    for(j=0; j<N_IM+1; j++){
+      nIter[i][j] = -1;
+    }
+  }
+
 
   MPI_Init(&argc, &argv);
 
