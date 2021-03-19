@@ -230,7 +230,7 @@ int main(int argc, char *argv[]){
   /* Write out results */
   if (doIO && myRank==1 ){
     if (verbose) {printf("Writing out results from process %d \n", myRank);}
-    write_to_file("mandelbrot.dat");
+    write_to_file("mandelbrot_origin.dat");
   }
 
   /* Record end time */
