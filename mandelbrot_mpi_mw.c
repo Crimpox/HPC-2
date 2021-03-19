@@ -206,7 +206,7 @@ int main(int argc, char *argv[]){
       // If the request for work contains results then add them to the managers results
       if (results[1] != startFlag){
         int rj;
-        for (rj = 0; rj < n_IM+1; rj++){
+        for (rj = 0; rj < N_IM+1; rj++){
           nIter[results[1]][rj] = results[rj+2];
         }
       }
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]){
       // If the request for work contains results then add them to the managers results
       if (results[1] != startFlag){
         int rj;
-        for (rj = 0; rj < n_IM+1; rj++){
+        for (rj = 0; rj < N_IM+1; rj++){
           nIter[results[1]][rj] = results[rj+2];
         }
       }
