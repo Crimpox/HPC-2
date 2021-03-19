@@ -131,6 +131,9 @@ void write_to_file(char filename[]){
   
   outfile=fopen(filename,"w");
   for (i=0; i<N_RE+1; i++){
+    if (nIter[i][j] == 0){
+      printf("%d failed\n", i);
+    }
     for (j=0; j<N_IM+1; j++){
       fprintf(outfile,"%f %f %d \n",z_Re[i], z_Im[j], nIter[i][j]);
     }
