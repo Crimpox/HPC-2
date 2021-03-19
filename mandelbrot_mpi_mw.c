@@ -131,9 +131,6 @@ void write_to_file(char filename[]){
   
   outfile=fopen(filename,"w");
   for (i=0; i<N_RE+1; i++){
-    if (nIter[i][j] == -1){
-      printf("%d failed\n", i);
-    }
     for (j=0; j<N_IM+1; j++){
       fprintf(outfile,"%f %f %d \n",z_Re[i], z_Im[j], nIter[i][j]);
     }
@@ -274,6 +271,8 @@ int main(int argc, char *argv[]){
 
   /* Communicate results so rank 1 has all the values */
   //do_communication(myRank);
+
+  
 
   /* Write out results */
   if (doIO && myRank==0 ){
