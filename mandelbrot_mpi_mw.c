@@ -259,7 +259,7 @@ int main(int argc, char *argv[]){
 
     //Set header for results buffer
     results[0] = myRank;
-    results[1] = startFlag;
+    results[1] = initFlag;
     while(true){
       
       // Send request for work
