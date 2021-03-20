@@ -34,6 +34,8 @@ const float z_Im_max =  1.0; /* Maximum imaginary value */
 const bool doIO = true;
 const bool verbose = true;
 
+const int initFlag = -1; /* Flag to indicate initial work request*/                        /* TASK 1*/
+
 /******************************************************************************************/
 
 /* Calculate number of iterations for a given i index (real axis) and loop over all j values 
@@ -141,6 +143,24 @@ void write_to_file(char filename[]){
 
 /******************************************************************************************/
 
+/* Used by manager process to process results from workers*/
+void process_buffer(int results[], int &nextProc){
+  
+  //Read header values
+  nextProc = results[0];  
+  int i = results[1];
+
+  //Add workers results to managers results
+  if (i != initFlag){
+    int j;
+    for (j=0; j < N_IM+1; j++){
+      nIter[i][j] = results[j+2];
+    }
+  }
+}
+
+/******************************************************************************************/
+
 
 int main(int argc, char *argv[]){
 
@@ -150,7 +170,6 @@ int main(int argc, char *argv[]){
   int nextProc;      /* Next process to send work to */
   MPI_Status status; /* Status from MPI calls */
   
-  int startFlag = -1111; /* Flag to indicate initial request*/
   int endFlag=-9999; /* Flag to indicate completion*/
 
   /* Timing variables */
@@ -199,7 +218,7 @@ int main(int argc, char *argv[]){
     //initialise nIter
     for (i=0; i<N_RE+1; i++){
       for(j=0; j<N_IM+1; j++){
-        nIter[i][j] = -1;
+        nIter[i][j] = initFlag;
       }
     }
 
@@ -208,17 +227,7 @@ int main(int argc, char *argv[]){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
       
-      nextProc = results[0];
-
-      // If the request for work contains results then add them to the managers results
-      if (results[1] != startFlag){
-        //printf("Received column %d from process %d\n", results[1], results[0]);
-
-        int rj;
-        for (rj = 0; rj < N_IM+1; rj++){
-          nIter[results[1]][rj] = results[rj+2];
-        }
-      }
+      process_buffer(results, &nextProc);
       
       // Send i value to requesting process
       MPI_Send(&i,        1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
@@ -228,17 +237,17 @@ int main(int argc, char *argv[]){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
+      process_buffer(results, &nextProc);
+      /**
       nextProc = results[0];
 
       // If the request for work contains results then add them to the managers results
-      if (results[1] != startFlag){
-        //printf("Received final column %d from process %d\n", results[1], results[0]);
-
+      if (results[1] != initFlag){
         int rj;
         for (rj = 0; rj < N_IM+1; rj++){
           nIter[results[1]][rj] = results[rj+2];
         }
-      }
+      }**/
 
       // Send endFlag to finish
       MPI_Send(&endFlag,     1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
@@ -248,6 +257,7 @@ int main(int argc, char *argv[]){
   // Worker Processes
   else {
 
+    //Set header for results buffer
     results[0] = myRank;
     results[1] = startFlag;
     while(true){
@@ -261,8 +271,9 @@ int main(int argc, char *argv[]){
 	      break;
       } else {
 	      calc_vals(i);
+
+        //Load buffer with results
         results[1] = i;
-        
         int ri;
         for (ri=2; ri < n_results; ri++){
             results[ri] = nIter[i][ri-2];
