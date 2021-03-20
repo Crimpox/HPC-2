@@ -144,10 +144,10 @@ void write_to_file(char filename[]){
 /******************************************************************************************/
 
 /* Used by manager process to process results from workers*/
-void process_buffer(int results[], int &nextProc){
+void process_buffer(int results[], int *nextProc){
   
   //Read header values
-  nextProc = results[0];  
+  *nextProc = results[0];  
   int i = results[1];
 
   //Add workers results to managers results
