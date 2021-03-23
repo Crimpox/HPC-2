@@ -169,7 +169,7 @@ int main(int argc, char *argv[]){
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             
       // Send i value to requesting process
-      MPI_Send(&i,        1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
+      MPI_Send(&i,        1, MPI_INT, results[0],       100,         MPI_COMM_WORLD);
 
       // Process results                                                            /*TASK 1*/
       process_buffer(results, &nextProc);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
       // Send endFlag to finish
-      MPI_Send(&endFlag,     1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
+      MPI_Send(&endFlag,     1, MPI_INT, results[0],       100,         MPI_COMM_WORLD);
 
       // Process results                                                            /*TASK 1*/                                                
       process_buffer(results, &nextProc);
