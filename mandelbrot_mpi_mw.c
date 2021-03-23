@@ -34,7 +34,7 @@ const float z_Im_max =  1.0; /* Maximum imaginary value */
 const bool doIO = false;
 const bool verbose = false;
 
-const int initFlag = -1; /* Flag to indicate initial work request*/                        /* TASK 1*/
+const int initFlag = -1; /* Flag to indicate initial work request*/              /* TASK 1*/
 
 /******************************************************************************************/
 
@@ -73,59 +73,6 @@ void calc_vals(int i){
 
 /******************************************************************************************/
 
-/* Communicate results so that the rank 1 process in the world group is ready 
-to write results out to file. A new communicator will be set up which includes 
-only the worker processes */
-
-void do_communication(int myRank){
-
-  MPI_Group worldGroup, workerGroup;
-  MPI_Comm  workerComm;
-  int zeroArray={0};
-  
-  int sendBuffer[(N_RE+1)*(N_IM+1)];
-  int receiveBuffer[(N_RE+1)*(N_IM+1)];
-  int index=0;
-  int i, j;
-
-  // Get a group handle for the world group
-  MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
-  // Form a new group excluding world group rank 0 
-  MPI_Group_excl(worldGroup, 1, &zeroArray, &workerGroup); 
-  // Create a communicator for the new group
-  MPI_Comm_create(MPI_COMM_WORLD, workerGroup, &workerComm);
-  
-  /* Pack nIter into a 1D buffer for sending*/
-  for (i=0; i<N_RE+1; i++){
-    for (j=0; j<N_IM+1; j++){
-      sendBuffer[index]=nIter[i][j];
-      index++;
-    }
-  }
-
-  /* call MPI_reduce to collate all results on world group process 1
-      The world group rank zero process does not make this call */
-  if (myRank != 0 ){
-    MPI_Reduce(&sendBuffer, &receiveBuffer, (N_RE+1)*(N_IM+1), MPI_INT, MPI_SUM, 0, workerComm); 
-  }
-
-  /* Unpack receive buffer into nIter */
-  index=0;
-  for (i=0; i<N_RE+1; i++){
-    for (j=0; j<N_IM+1; j++){
-      nIter[i][j]=receiveBuffer[index];
-      index++;
-    }
-  }
-
-  /* Free the group and communicator */
-  if (myRank != 0 ){MPI_Comm_free(&workerComm);}
-  MPI_Group_free(&workerGroup);
-  
-}
-
-/******************************************************************************************/
-
 void write_to_file(char filename[]){
 
   int i, j;
@@ -143,7 +90,7 @@ void write_to_file(char filename[]){
 
 /******************************************************************************************/
 
-/* Used by manager process to process results from workers*/
+/* Used by manager process to process results from workers*/                      /*TASK 1*/
 void process_buffer(int results[], int *nextProc){
   
   //Read header values
@@ -178,7 +125,8 @@ int main(int argc, char *argv[]){
   /* Loop indices */
   int i,j;
   
-  int n_results = N_IM + 3;
+  /* Results buffer*/
+  int n_results = N_IM + 3; /* Number of items in the buffer*/
   int results[n_results]; 
   
   MPI_Init(&argc, &argv);
@@ -215,18 +163,12 @@ int main(int argc, char *argv[]){
   // Manager process
   if ( myRank == 0 ){
 
-    //initialise nIter
-    for (i=0; i<N_RE+1; i++){
-      for(j=0; j<N_IM+1; j++){
-        nIter[i][j] = initFlag;
-      }
-    }
-
     // Hand out work to worker processes
     for (i=0; i<N_RE+1; i++){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
       
+      // Process results
       process_buffer(results, &nextProc);
       
       // Send i value to requesting process
@@ -237,17 +179,8 @@ int main(int argc, char *argv[]){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
+      // Process results
       process_buffer(results, &nextProc);
-      /**
-      nextProc = results[0];
-
-      // If the request for work contains results then add them to the managers results
-      if (results[1] != initFlag){
-        int rj;
-        for (rj = 0; rj < N_IM+1; rj++){
-          nIter[results[1]][rj] = results[rj+2];
-        }
-      }**/
 
       // Send endFlag to finish
       MPI_Send(&endFlag,     1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
@@ -260,6 +193,7 @@ int main(int argc, char *argv[]){
     //Set header for results buffer
     results[0] = myRank;
     results[1] = initFlag;
+
     while(true){
       
       // Send request for work
@@ -267,6 +201,7 @@ int main(int argc, char *argv[]){
       // Receive i value to work on
       MPI_Recv(&i,      1, MPI_INT, 0, 100       , MPI_COMM_WORLD, &status); 
 
+      // Stop when end flag is received
       if (i==endFlag){
 	      break;
       } else {
