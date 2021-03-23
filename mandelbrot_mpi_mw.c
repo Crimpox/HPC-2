@@ -91,10 +91,9 @@ void write_to_file(char filename[]){
 /******************************************************************************************/
 
 /* Used by manager process to process results from workers*/                      /*TASK 1*/
-void process_buffer(int results[], int *nextProc){
+void process_buffer(int results[]){
   
-  //Read header values
-  *nextProc = results[0];  
+  //Read header value
   int i = results[1];
 
   //Add workers results to managers results
@@ -167,24 +166,26 @@ int main(int argc, char *argv[]){
     for (i=0; i<N_RE+1; i++){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            
+      nextProc = results[0];
+
       // Send i value to requesting process
-      MPI_Send(&i,        1, MPI_INT, results[0],       100,         MPI_COMM_WORLD);
+      MPI_Send(&i,        1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
 
       // Process results                                                            /*TASK 1*/
-      process_buffer(results, &nextProc);
+      process_buffer(results);
 
     }
     // Tell all the worker processes to finish (once for each worker process = nProcs-1)
     for (i=0; i<nProcs-1; i++){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      nextProc = results[0];
 
       // Send endFlag to finish
-      MPI_Send(&endFlag,     1, MPI_INT, results[0],       100,         MPI_COMM_WORLD);
+      MPI_Send(&endFlag,     1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
 
       // Process results                                                            /*TASK 1*/                                                
-      process_buffer(results, &nextProc);
+      process_buffer(results);
     }
   }
 
