@@ -167,23 +167,24 @@ int main(int argc, char *argv[]){
     for (i=0; i<N_RE+1; i++){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      
-      // Process results
-      process_buffer(results, &nextProc);
-      
+            
       // Send i value to requesting process
       MPI_Send(&i,        1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
+
+      // Process results                                                            /*TASK 1*/
+      process_buffer(results, &nextProc);
+
     }
     // Tell all the worker processes to finish (once for each worker process = nProcs-1)
     for (i=0; i<nProcs-1; i++){
       // Receive request for work
       MPI_Recv(&results, n_results, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
-      // Process results
-      process_buffer(results, &nextProc);
-
       // Send endFlag to finish
       MPI_Send(&endFlag,     1, MPI_INT, nextProc,       100,         MPI_COMM_WORLD);
+
+      // Process results                                                            /*TASK 1*/                                                
+      process_buffer(results, &nextProc);
     }
   }
 
@@ -207,7 +208,7 @@ int main(int argc, char *argv[]){
       } else {
 	      calc_vals(i);
 
-        //Load buffer with results
+        //Load buffer with results                                                   /*TASK 1*/
         results[1] = i;
         int ri;
         for (ri=2; ri < n_results; ri++){
