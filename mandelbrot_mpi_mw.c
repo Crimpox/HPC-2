@@ -31,7 +31,7 @@ const float z_Im_min = -1.0; /* Minimum imaginary value */
 const float z_Im_max =  1.0; /* Maximum imaginary value */
 
 /* Set to true to write out results*/
-const bool doIO = true;
+const bool doIO = false;
 const bool verbose = false;
 
 const int initFlag = -1; /* Flag to indicate initial work request*/              /* TASK 1*/
